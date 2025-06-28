@@ -8,10 +8,10 @@ This report documents the behavior of each mysterious endpoint hosted at [https:
 
 - **Input:** `"racecar"`
 - **Output:** `"InJhY2VjYXIi"`
-- **Decoded Result:** `"racecar"`
+- **Decoded Result (Base64):** `"racecar"`
 
 ### 📌 Inference:
-Encodes the input string as **Base64**, including quotes. The server responds with the base64-encoded version of the input string.
+Encodes the input string as **Base64**, including double quotes.
 
 ---
 
@@ -20,7 +20,7 @@ Encodes the input string as **Base64**, including quotes. The server responds wi
 - **Output:** `{ "result": 8166848 }`
 
 ### 📌 Inference:
-Returns a **custom numeric counter** or non-standard timestamp. The value does not match epoch time and likely reflects internal logic or uptime ticks.
+Returns a **custom numeric counter** or **non-standard timestamp**. The value does not match Unix epoch time, suggesting it might be a tick count, session ID, or internal uptime counter.
 
 ---
 
@@ -30,47 +30,48 @@ Returns a **custom numeric counter** or non-standard timestamp. The value does n
   - `"racecar"`
   - `"15"`
   - `"3"`
-  - `"FizzBuzz"`
-  - `["15", "3", "hello", "fizzbuzz"]` (array)
+  - `["15", "3", "hello", "fizzbuzz"]` (JSON array)
+- **Outputs:** All returned `{ "result": false }`
 
-- **Outputs:** All returned:
-  ```json
-  { "result": false }
+### 📌 Inference:
+The endpoint expects a **JSON array**, but returns `false` even for valid arrays or expected values like `15`, `3`, or `"FizzBuzz"`. Behavior unclear—possibly:
+- Only accepts integer arrays with specific values.
+- Possibly broken or incomplete logic.
+
+Further testing required.
 
 ---
 
 ## ✅ 4. POST `/zap`
 
-- **Sample Input:** `"racecar"`
+- **Input:** `"racecar"`
 - **Output:** `"\"racecar\""`
 
 ### 📌 Inference:
-Returns the **JSON-encoded version of the input**. Effectively wraps the input in double quotes.
+Returns the **JSON-encoded version of the input** — the string with extra quotes. Acts like a simple stringify utility.
 
 ---
 
 ## ✅ 5. POST `/alpha`
 
-- **Sample Inputs & Output:**
-
-| Input      | Output |
-|------------|--------|
-| `"abc"`    | false  |
-| `"abc123"` | false  |
-| `"123"`    | false  |
+- **Inputs Tried:**
+  - `"abc"` → false
+  - `"abc123"` → false
+  - `"123"` → false
+- **Output:** Always returns `false`
 
 ### 📌 Inference:
-Behavior unclear. Returns `false` even for alphabet-only strings. Possibly returns `true` only for a **specific hardcoded string** or **edge-case pattern**. Requires further fuzz testing to uncover.
+This endpoint seems to return `true` only under a **very specific and unknown condition**. All common alphanumeric and alphabetic inputs return `false`.
 
 ---
 
 ## ✅ 6. POST `/glitch`
 
-- **Sample Input:** `"racecar"`
+- **Input:** `"racecar"`
 - **Output:** `"\"racecar\""`
 
 ### 📌 Inference:
-Same behavior as `/zap` for basic strings. Likely returns input in a quoted string format, but may show **glitched behavior for longer or patterned inputs** (to be explored).
+Behaves exactly like `/zap`. Echoes the input with quotes (JSON stringified). May behave differently with more complex inputs, but appears identical for simple strings.
 
 ---
 
@@ -78,11 +79,11 @@ Same behavior as `/zap` for basic strings. Likely returns input in a quoted stri
 
 | Endpoint     | Behavior Summary                                                       |
 |--------------|------------------------------------------------------------------------|
-| `/data`      | Base64-encodes the input as a **JSON string**                          |
-| `/time`      | Returns a **monotonic counter or internal clock**                      |
-| `/fizzbuzz`  | Returns `true` for a hidden/specific string like `"fizzbuzz"` only     |
-| `/zap`       | Echoes back the **quoted input** (JSON string)                         |
-| `/alpha`     | Unknown; returns `false` for all tested inputs so far                  |
-| `/glitch`    | Behaves like `/zap`, but may have hidden transformations               |
+| `/data`      | Base64-encodes the input string, including quotes                      |
+| `/time`      | Returns a non-standard numerical counter or internal tick              |
+| `/fizzbuzz`  | Always returns `false`, even for numeric and array inputs              |
+| `/zap`       | Returns the input wrapped in quotes (JSON-stringified)                 |
+| `/alpha`     | Returns `false` for all tested inputs; logic unclear                   |
+| `/glitch`    | Same as `/zap`; quotes input as JSON string                            |
 
 
