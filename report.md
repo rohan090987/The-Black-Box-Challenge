@@ -1,17 +1,18 @@
-# 🧪 Black Box API Challenge – Report
+# 🧪 Black Box API Challenge – Endpoint Behavior Report
 
-This report documents the behavior of each mysterious endpoint hosted at [https://blackbox-interface.vercel.app](https://blackbox-interface.vercel.app), as reverse-engineered by testing sample inputs and analyzing their outputs.
+This report documents the behavior of each mysterious API endpoint hosted at [https://blackbox-interface.vercel.app](https://blackbox-interface.vercel.app). Through input testing and careful analysis, the function of each endpoint was reverse-engineered without documentation, relying solely on observed behavior.
 
 ---
 
 ## ✅ 1. POST `/data`
 
-- **Input:** `"racecar"`
+- **Sample Input:** `"racecar"`
 - **Output:** `"InJhY2VjYXIi"`
-- **Decoded Result:** `"racecar"`
+- **Decoded (Base64):** `"\"racecar\""`
 
 ### 📌 Inference:
-Encodes the input string as **Base64**, including quotes.
+Encodes the input using **Base64 after converting it to a JSON string**. For example:
+- Input: `"hello"` → Encodes `"\"hello\""` (with quotes), not just `hello`.
 
 ---
 
@@ -20,46 +21,67 @@ Encodes the input string as **Base64**, including quotes.
 - **Output:** `{ "result": 8166848 }`
 
 ### 📌 Inference:
-Returns a numerical **timestamp** or counter. Likely a custom time or internal tick count, not UTC or epoch time.
+Returns a **monotonically increasing counter** or custom internal tick unit. It is not a UNIX timestamp. Useful for identifying app uptime or state change markers.
 
 ---
 
 ## ✅ 3. POST `/fizzbuzz`
 
-- **Input:** `"racecar"`
+- **Sample Input:** `"racecar"`
 - **Output:** `false`
 
+- **Input:** `"fizzbuzz"` → ✅ Test Required  
+- **Input:** `"15"` or `"3"` → ❌ `false`
+
 ### 📌 Inference:
-Returns `true` or a string like "Fizz" or "Buzz" **only for numeric input** (e.g., 3 → Fizz, 5 → Buzz, 15 → FizzBuzz). Non-numeric input → `false`.
+This does **not behave like a traditional FizzBuzz** function based on numbers. Returns `true` only for a **specific keyword or hidden condition**, likely `"fizzbuzz"` (case sensitive). All other inputs return `false`.
 
 ---
 
 ## ✅ 4. POST `/zap`
 
-- **Input:** `"racecar"`
-- **Output:** `"\"racecar\""` (i.e., `"racecar"` as a quoted string)
+- **Sample Input:** `"racecar"`
+- **Output:** `"\"racecar\""`
 
 ### 📌 Inference:
-Echoes the input string with **quotes wrapped** (i.e., stringified JSON).
+Returns the **JSON-encoded version of the input**. Effectively wraps the input in double quotes.
 
 ---
 
 ## ✅ 5. POST `/alpha`
 
-- **Input:** `"racecar"`
-- **Output:** `false`
+- **Sample Inputs & Output:**
+
+| Input      | Output |
+|------------|--------|
+| `"abc"`    | false  |
+| `"abc123"` | false  |
+| `"123"`    | false  |
 
 ### 📌 Inference:
-Returns `true` **only if input contains only non-alphabet characters**. "racecar" has only letters → returns `false`.
+Behavior unclear. Returns `false` even for alphabet-only strings. Possibly returns `true` only for a **specific hardcoded string** or **edge-case pattern**. Requires further fuzz testing to uncover.
 
 ---
 
 ## ✅ 6. POST `/glitch`
 
-- **Input:** `"racecar"`
-- **Output:** `"\"racecar\""` (i.e., JSON-quoted string)
+- **Sample Input:** `"racecar"`
+- **Output:** `"\"racecar\""`
 
 ### 📌 Inference:
-Returns input with quotes. Possibly applies a transformation for certain patterns but unchanged for "racecar".
+Same behavior as `/zap` for basic strings. Likely returns input in a quoted string format, but may show **glitched behavior for longer or patterned inputs** (to be explored).
 
 ---
+
+## 🔍 Summary Table
+
+| Endpoint     | Behavior Summary                                                       |
+|--------------|------------------------------------------------------------------------|
+| `/data`      | Base64-encodes the input as a **JSON string**                          |
+| `/time`      | Returns a **monotonic counter or internal clock**                      |
+| `/fizzbuzz`  | Returns `true` for a hidden/specific string like `"fizzbuzz"` only     |
+| `/zap`       | Echoes back the **quoted input** (JSON string)                         |
+| `/alpha`     | Unknown; returns `false` for all tested inputs so far                  |
+| `/glitch`    | Behaves like `/zap`, but may have hidden transformations               |
+
+
