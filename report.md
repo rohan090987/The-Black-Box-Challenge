@@ -1,18 +1,17 @@
-# 🧪 Black Box API Challenge – Endpoint Behavior Report
+# 🧪 Black Box API Challenge – Report
 
-This report documents the behavior of each mysterious API endpoint hosted at [https://blackbox-interface.vercel.app](https://blackbox-interface.vercel.app). Through input testing and careful analysis, the function of each endpoint was reverse-engineered without documentation, relying solely on observed behavior.
+This report documents the behavior of each mysterious endpoint hosted at [https://blackbox-interface.vercel.app](https://blackbox-interface.vercel.app), as reverse-engineered by testing various inputs and analyzing outputs.
 
 ---
 
 ## ✅ 1. POST `/data`
 
-- **Sample Input:** `"racecar"`
+- **Input:** `"racecar"`
 - **Output:** `"InJhY2VjYXIi"`
-- **Decoded (Base64):** `"\"racecar\""`
+- **Decoded Result:** `"racecar"`
 
 ### 📌 Inference:
-Encodes the input using **Base64 after converting it to a JSON string**. For example:
-- Input: `"hello"` → Encodes `"\"hello\""` (with quotes), not just `hello`.
+Encodes the input string as **Base64**, including quotes. The server responds with the base64-encoded version of the input string.
 
 ---
 
@@ -21,20 +20,22 @@ Encodes the input using **Base64 after converting it to a JSON string**. For exa
 - **Output:** `{ "result": 8166848 }`
 
 ### 📌 Inference:
-Returns a **monotonically increasing counter** or custom internal tick unit. It is not a UNIX timestamp. Useful for identifying app uptime or state change markers.
+Returns a **custom numeric counter** or non-standard timestamp. The value does not match epoch time and likely reflects internal logic or uptime ticks.
 
 ---
 
-## ✅ 3. POST `/fizzbuzz`
+## ❌ 3. POST `/fizzbuzz`
 
-- **Sample Input:** `"racecar"`
-- **Output:** `false`
+- **Inputs Tried:**
+  - `"racecar"`
+  - `"15"`
+  - `"3"`
+  - `"FizzBuzz"`
+  - `["15", "3", "hello", "fizzbuzz"]` (array)
 
-- **Input:** `"fizzbuzz"` → ✅ Test Required  
-- **Input:** `"15"` or `"3"` → ❌ `false`
-
-### 📌 Inference:
-This does **not behave like a traditional FizzBuzz** function based on numbers. Returns `true` only for a **specific keyword or hidden condition**, likely `"fizzbuzz"` (case sensitive). All other inputs return `false`.
+- **Outputs:** All returned:
+  ```json
+  { "result": false }
 
 ---
 
